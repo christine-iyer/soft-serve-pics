@@ -1,51 +1,50 @@
-require('dotenv').config()
-const express = require('express'); //Line 1
-const path = require('path')
-const mongoose = require("mongoose"); // new
-const cors = require("cors");
-const ImageUploadRouter = require("./routes/uploadImageRoute");
+//server.js
+const mongoose = require('mongoose');
+const express = require('express');
+const cors = require('cors');
 
-const port = process.env.PORT || 8000; //Line 3
-const app = express(); //Line 2
-// This displays message that the server running and listening to specified port
-app.listen(port, () => console.log(`Listening on port ${port}`)); //Line 6
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-// create a GET route
-app.get('/express_backend', (req, res) => { //Line 9
-res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' }); //Line 10
-}); //Line 1
+app.listen(3001, () => {
+  console.log('Server Started on Port 3001');
+});
 
-const options = {
-     useNewUrlParser: true,
-     useUnifiedTopology: true,
-   };
-
-   app.use(express.json())// req.body
-   app.use((req, res, next) => {
-       res.locals.data = {}
-       next()
-   })
-   app.use(cors());
-   app.use(express.static(path.join(__dirname, 'build')))
-   //adding the middlewares
-   app.use(express.json());
-   app.use(express.urlencoded({ extended: true }));
-   
-   
-   app.use("/api", ImageUploadRouter);
-   // Connect to MongoDB database
-   // mongoose.connect(process.env.MONGO_URI, options);
-   // const db = mongoose.connection;
-   // db.on('connected', function () {
-   //   console.log(`Connected to ${db.name} at ${db.host}:${db.port}`);
-   // // });
-   app.get('*', (req, res) => {
-     res.sendFile(path.join(__dirname, 'build', 'index.html'))
-   })
-   mongoose
-   .connect(process.env.MONGO_URI, options)
-   .then(()=> {
-     app.listen(6000,()=> {
-       console.log("Starting server")
-     })
-   })
+app.get('/', (req, res) => {
+  res.send('Testing 123');
+});
+const db = 'mongodb://localhost/react_image';
+mongoose
+  .connect(db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log('Connected to MongoDB ...');
+  })
+  .catch(err => {
+    console.error('Could not Connect to MongoDb !!!', err);
+  });
+  const Image = mongoose.model(
+    'image',
+    mongoose.Schema({
+      imageUrl: String
+    })
+  );
+  app.post('/upload', async (req, res) => {
+    try {
+      const newImage = new Image({
+        imageUrl: req.body.imageUrl
+      });
+      await newImage.save();
+      res.json(newImage.imageUrl);
+    } catch (err) {
+      console.error('Something went wrong', err);
+    }
+  });
+  
+  app.get('/getLatest', async (req, res) => {
+    const getImage = await Image.findOne().sort({ _id: -1 });
+    res.json(getImage.imageUrl);
+  });
