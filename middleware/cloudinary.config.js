@@ -1,6 +1,5 @@
-const multer = require("multer");
 require('dotenv').config()
-
+const multer = require("multer");
 
 const cloudinary = require("cloudinary").v2;
 

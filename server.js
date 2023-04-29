@@ -1,38 +1,51 @@
-const { cloudinary } = require('./utils/cloudinary');
-const express = require('express');
-const app = express();
-var cors = require('cors');
+require('dotenv').config()
+const express = require('express'); //Line 1
+const path = require('path')
+const mongoose = require("mongoose"); // new
+const cors = require("cors");
+const ImageUploadRouter = require("./routes/uploadImageRoute");
 
-app.use(express.static('public'));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(cors());
+const port = process.env.PORT || 8000; //Line 3
+const app = express(); //Line 2
+// This displays message that the server running and listening to specified port
+app.listen(port, () => console.log(`Listening on port ${port}`)); //Line 6
 
-app.get('/api/images', async (req, res) => {
-    const { resources } = await cloudinary.search
-        .expression('folder:dev_setups')
-        .sort_by('public_id', 'desc')
-        .max_results(30)
-        .execute();
+// create a GET route
+app.get('/express_backend', (req, res) => { //Line 9
+res.send({ express: 'YOUR EXPRESS BACKEND IS CONNECTED TO REACT' }); //Line 10
+}); //Line 1
 
-    const publicIds = resources.map((file) => file.public_id);
-    res.send(publicIds);
-});
-app.post('/api/upload', async (req, res) => {
-    try {
-        const fileStr = req.body.data;
-        const uploadResponse = await cloudinary.uploader.upload(fileStr, {
-            upload_preset: 'dev_setups',
-        });
-        console.log(uploadResponse);
-        res.json({ msg: 'yaya' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ err: 'Something went wrong' });
-    }
-});
+const options = {
+     useNewUrlParser: true,
+     useUnifiedTopology: true,
+   };
 
-const port = process.env.PORT || 3001;
-app.listen(port, () => {
-    console.log('listening on 3001');
-});
+   app.use(express.json())// req.body
+   app.use((req, res, next) => {
+       res.locals.data = {}
+       next()
+   })
+   app.use(cors());
+   app.use(express.static(path.join(__dirname, 'build')))
+   //adding the middlewares
+   app.use(express.json());
+   app.use(express.urlencoded({ extended: true }));
+   
+   
+   app.use("/api", ImageUploadRouter);
+   // Connect to MongoDB database
+   // mongoose.connect(process.env.MONGO_URI, options);
+   // const db = mongoose.connection;
+   // db.on('connected', function () {
+   //   console.log(`Connected to ${db.name} at ${db.host}:${db.port}`);
+   // // });
+   app.get('*', (req, res) => {
+     res.sendFile(path.join(__dirname, 'build', 'index.html'))
+   })
+   mongoose
+   .connect(process.env.MONGO_URI, options)
+   .then(()=> {
+     app.listen(6000,()=> {
+       console.log("Starting server")
+     })
+   })

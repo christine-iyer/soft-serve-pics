@@ -27,6 +27,7 @@ export default function Home() {
                             publicId={imageId}
                             width="300"
                             crop="scale"
+                            value='{index}'
                         />
                     ))}
             </div>

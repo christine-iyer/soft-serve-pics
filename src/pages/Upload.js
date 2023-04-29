@@ -24,7 +24,8 @@ export default function Upload() {
 
     const handleSubmitFile = (e) => {
         e.preventDefault();
-        if (!selectedFile) return;
+        if (!previewSource) return;
+        uploadImage(previewSource)
         const reader = new FileReader();
         reader.readAsDataURL(selectedFile);
         reader.onloadend = () => {
@@ -73,7 +74,7 @@ export default function Upload() {
                 <img
                     src={previewSource}
                     alt="chosen"
-                    style={{ height: '300px' }}
+                    style={{ height: '200px' }}
                 />
             )}
         </div>
