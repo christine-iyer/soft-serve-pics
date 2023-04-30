@@ -4,7 +4,7 @@ const url = 'cloudinary://145837185735489:j3d6-pGzyptW6ao3uvKCpSW6Gh4@dqjhgnivi'
 const preset = 'crystal';
 
 export default function App() {
-  const [file, setFile] = useState()
+  const [file, setFile] = useState('')
   const [description, setDescription] = useState("")
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,13 +26,13 @@ export default function App() {
       setLoading(false);
       setImage(image.data);
     } catch (err) {
-      console.error(err);
+      console.error('upload');
     }
   };
   useEffect(() => {
     async function fetchImage() {
       const image = await axios.get('http://localhost:3001/getLatest');
-      setImage(image.data);
+      setImage(image.data.secure_url);
     }
     fetchImage();
     // eslint-disable-next-line
